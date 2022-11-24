@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_function_declarations_over_variables
-
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_themoviedb/domain/entity/popular_movie_response.dart';
@@ -111,25 +109,27 @@ class ApiClient {
   }
 
   Future<String> _makeToken() async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final token = jsonMap['request_token'] as String;
       return token;
-    };
-    final result =
-        _get('/authentication/token/new', parser, {'api_key': _apiKey});
+    }
+
+    final result = _get('/authentication/token/new', parser,
+        <String, dynamic>{'api_key': _apiKey});
     return result;
   }
 
   Future<int> getAccountInfo(
     String sessionId,
   ) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final result = jsonMap['id'] as int;
       return result;
-    };
-    final result = _get('/account', parser, {
+    }
+
+    final result = _get('/account', parser, <String, dynamic>{
       'api_key': _apiKey,
       'session_id': sessionId,
     });
@@ -137,12 +137,13 @@ class ApiClient {
   }
 
   Future<PopularSerialResponse> popularSerial(int page, String locale) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularSerialResponse.fromJson(jsonMap);
       return response;
-    };
-    final result = _get('/tv/popular', parser, {
+    }
+
+    final result = _get('/tv/popular', parser, <String, dynamic>{
       'api_key': _apiKey,
       'language': locale,
       'page': page.toString(),
@@ -152,12 +153,13 @@ class ApiClient {
 
   Future<PopularSerialResponse> searchSerial(
       int page, String locale, String query) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularSerialResponse.fromJson(jsonMap);
       return response;
-    };
-    final result = _get('/search/tv', parser, {
+    }
+
+    final result = _get('/search/tv', parser, <String, dynamic>{
       'api_key': _apiKey,
       'language': locale,
       'page': page.toString(),
@@ -168,12 +170,13 @@ class ApiClient {
   }
 
   Future<SerialDetails> serialDetails(int tvId, String locale) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = SerialDetails.fromJson(jsonMap);
       return response;
-    };
-    final result = _get('/tv/$tvId', parser, {
+    }
+
+    final result = _get('/tv/$tvId', parser, <String, dynamic>{
       'append_to_response': 'credits,videos',
       'api_key': _apiKey,
       'language': locale,
@@ -186,12 +189,13 @@ class ApiClient {
     String locale,
     String sessionId,
   ) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final result = jsonMap['favorite'] as bool;
       return result;
-    };
-    final result = _get('/tv/$tvId/account_states', parser, {
+    }
+
+    final result = _get('/tv/$tvId/account_states', parser, <String, dynamic>{
       'api_key': _apiKey,
       'language': locale,
       'session_id': sessionId,
@@ -211,17 +215,18 @@ class ApiClient {
       'media_id': mediaId.toString(),
       'favorite': isFavorite.toString(),
     };
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       return 1;
       // final jsonMap = json as Map<String, dynamic>;
       // final token = jsonMap['request_token'] as String;
       // return token;
-    };
+    }
+
     final result = _post(
       '/account/$accountId/favorite',
       parameters,
       parser,
-      {
+      <String, dynamic>{
         'api_key': _apiKey,
         'session_id': sessionId,
       },
@@ -230,12 +235,13 @@ class ApiClient {
   }
 
   Future<PopularMovieResponse> popularMovie(int page, String locale) async {
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularMovieResponse.fromJson(jsonMap);
       return response;
-    };
-    final result = _get('/movie/popular', parser, {
+    }
+
+    final result = _get('/movie/popular', parser, <String, dynamic>{
       'api_key': _apiKey,
       'language': locale,
       'page': page.toString(),
@@ -253,16 +259,17 @@ class ApiClient {
       'password': password,
       'request_token': requestToken
     };
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final token = jsonMap['request_token'] as String;
       return token;
-    };
+    }
+
     final result = _post(
       '/authentication/token/validate_with_login',
       parameters,
       parser,
-      {'api_key': _apiKey},
+      <String, dynamic>{'api_key': _apiKey},
     );
     return result;
   }
@@ -271,16 +278,17 @@ class ApiClient {
     required String requestToken,
   }) async {
     final parameters = <String, dynamic>{'request_token': requestToken};
-    final parser = (dynamic json) {
+    parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final sessionId = jsonMap['session_id'] as String;
       return sessionId;
-    };
+    }
+
     final result = _post(
       '/authentication/session/new',
       parameters,
       parser,
-      {'api_key': _apiKey},
+      <String, dynamic>{'api_key': _apiKey},
     );
     return result;
   }
