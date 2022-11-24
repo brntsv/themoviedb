@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
 import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
 import 'package:flutter_themoviedb/ui/widgets/movie_list/serial_list_model.dart';
 
@@ -43,7 +43,8 @@ class SerialListWidget extends StatelessWidget {
                     child: Row(
                       children: [
                         posterPath != null
-                            ? Image.network(ApiClient.imageUrl(posterPath),
+                            ? Image.network(
+                                ImageDownloader.imageUrl(posterPath),
                                 width: 95)
                             : const SizedBox.shrink(),
                         Expanded(

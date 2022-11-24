@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
 import 'package:flutter_themoviedb/domain/entity/popular_serial_response.dart';
 import 'package:flutter_themoviedb/domain/entity/serials.dart';
 import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
 import 'package:intl/intl.dart';
 
 class SerialListModel extends ChangeNotifier {
-  final _apiClient = ApiClient();
+  final _apiClient = SerialApiClient();
   final _serials = <Serial>[];
   late int _currentPage;
   late int _totalPage;
