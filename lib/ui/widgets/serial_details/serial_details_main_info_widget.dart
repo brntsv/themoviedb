@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
 import 'package:flutter_themoviedb/domain/entity/serial_details.dart';
 import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
 import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
@@ -39,7 +39,7 @@ class _TopPosterWidget extends StatelessWidget {
       child: Stack(
         children: [
           backdropPath != null
-              ? Image.network(ApiClient.imageUrl(backdropPath))
+              ? Image.network(ImageDownloader.imageUrl(backdropPath))
               : const SizedBox.shrink(),
           Container(
             height: 225,
@@ -63,7 +63,7 @@ class _TopPosterWidget extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12.0),
               child: posterPath != null
-                  ? Image.network(ApiClient.imageUrl(posterPath))
+                  ? Image.network(ImageDownloader.imageUrl(posterPath))
                   : const SizedBox.shrink(),
             ),
           ),

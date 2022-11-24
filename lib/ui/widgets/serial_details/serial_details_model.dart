@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/account_api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/api_client_exception.dart';
+import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
 import 'package:flutter_themoviedb/domain/data_providers/session_data_provider.dart';
 import 'package:flutter_themoviedb/domain/entity/serial_details.dart';
 import 'package:intl/intl.dart';
 
 class SerialDetailsModel extends ChangeNotifier {
   final _sessionDataProvider = SessionDataProvider();
-  final _apiClient = ApiClient();
+  final _serialApiClient = SerialApiClient();
+  final _accountApiClient = AccountApiClient();
 
   final int serialId;
   SerialDetails? _serialDetails;
@@ -33,11 +36,11 @@ class SerialDetailsModel extends ChangeNotifier {
 
   Future<void> loadDetails() async {
     try {
-      _serialDetails = await _apiClient.serialDetails(serialId, _locale);
+      _serialDetails = await _serialApiClient.serialDetails(serialId, _locale);
       final sessionId = await _sessionDataProvider.getSessionId();
       if (sessionId != null) {
         _isFavorite =
-            await _apiClient.isFavourite(serialId, _locale, sessionId);
+            await _serialApiClient.isFavourite(serialId, _locale, sessionId);
       }
       notifyListeners();
     } on ApiClientException catch (e) {
@@ -54,7 +57,7 @@ class SerialDetailsModel extends ChangeNotifier {
     _isFavorite = !_isFavorite;
     notifyListeners();
     try {
-      await _apiClient.markAsFavorite(
+      await _accountApiClient.markAsFavorite(
         accountId: accountId,
         sessionId: sessionId,
         mediaType: MediaType.tv,

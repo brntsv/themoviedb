@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/api_client.dart';
+import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
 import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_model.dart';
 
@@ -112,7 +112,7 @@ class _ActorItemWidget extends StatelessWidget {
             children: [
               profilePath != null
                   ? Image.network(
-                      ApiClient.imageUrl(profilePath),
+                      ImageDownloader.imageUrl(profilePath),
                       fit: BoxFit.fitWidth,
                       height: 160,
                       width: 165,
