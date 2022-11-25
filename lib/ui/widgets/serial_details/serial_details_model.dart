@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_themoviedb/config/config.dart';
 import 'package:flutter_themoviedb/domain/api_client/account_api_client.dart';
 import 'package:flutter_themoviedb/domain/api_client/api_client_exception.dart';
 import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
@@ -36,11 +37,12 @@ class SerialDetailsModel extends ChangeNotifier {
 
   Future<void> loadDetails() async {
     try {
-      _serialDetails = await _serialApiClient.serialDetails(serialId, _locale);
+      _serialDetails = await _serialApiClient.serialDetails(
+          serialId, _locale, Config.apiKey);
       final sessionId = await _sessionDataProvider.getSessionId();
       if (sessionId != null) {
-        _isFavorite =
-            await _serialApiClient.isFavourite(serialId, _locale, sessionId);
+        _isFavorite = await _serialApiClient.isFavourite(
+            serialId, _locale, sessionId, Config.apiKey);
       }
       notifyListeners();
     } on ApiClientException catch (e) {
