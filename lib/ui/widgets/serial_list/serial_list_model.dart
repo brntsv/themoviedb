@@ -1,23 +1,40 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
-import 'package:flutter_themoviedb/domain/entity/popular_serial_response.dart';
 import 'package:flutter_themoviedb/domain/entity/serials.dart';
-import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
 import 'package:intl/intl.dart';
 
-class SerialListModel extends ChangeNotifier {
+import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
+import 'package:flutter_themoviedb/domain/entity/popular_serial_response.dart';
+import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
+
+class SerialListRowData {
+  final int id;
+  final String? posterPath;
+  final String title;
+  final String firstAirDate;
+  final String overview;
+  SerialListRowData({
+    required this.id,
+    required this.posterPath,
+    required this.title,
+    required this.firstAirDate,
+    required this.overview,
+  });
+}
+
+class SerialListViewModel extends ChangeNotifier {
+  String _locale = '';
+  Timer? searchDebounce;
+
   final _apiClient = SerialApiClient();
-  final _serials = <Serial>[];
+  final _serials = <SerialListRowData>[];
   late int _currentPage;
   late int _totalPage;
   var _isLoadingProgress = false;
   String? _searchQuery;
-  String _locale = '';
-  Timer? searchDebounce;
 
-  List<Serial> get serials => List.unmodifiable(_serials);
+  List<SerialListRowData> get serials => List.unmodifiable(_serials);
   late DateFormat _dateFormat;
 
   String stringFromDate(DateTime? date) =>
@@ -55,7 +72,7 @@ class SerialListModel extends ChangeNotifier {
 
     try {
       final serialsResponse = await _loadSerials(nextPage, _locale);
-      _serials.addAll(serialsResponse.serials);
+      _serials.addAll(serialsResponse.serials.map(_makeRowData).toList());
       _currentPage = serialsResponse.page;
       _totalPage = serialsResponse.totalPages;
       _isLoadingProgress = false;
@@ -63,6 +80,18 @@ class SerialListModel extends ChangeNotifier {
     } catch (e) {
       _isLoadingProgress = false;
     }
+  }
+
+  SerialListRowData _makeRowData(Serial serial) {
+    final firstAir = serial.firstAirDate;
+    final firstAirDate = firstAir != null ? _dateFormat.format(firstAir) : '';
+    return SerialListRowData(
+      id: serial.id,
+      posterPath: serial.posterPath,
+      title: serial.name,
+      firstAirDate: firstAirDate,
+      overview: serial.overview,
+    );
   }
 
   void onSerialTap(BuildContext context, int index) {

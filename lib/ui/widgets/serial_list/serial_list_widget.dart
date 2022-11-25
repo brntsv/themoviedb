@@ -1,119 +1,160 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
-import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
-import 'package:flutter_themoviedb/ui/widgets/movie_list/serial_list_model.dart';
+import 'package:provider/provider.dart';
 
-class SerialListWidget extends StatelessWidget {
+import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
+import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_model.dart';
+
+class SerialListWidget extends StatefulWidget {
   const SerialListWidget({Key? key}) : super(key: key);
 
   @override
+  State<SerialListWidget> createState() => _SerialListWidgetState();
+}
+
+class _SerialListWidgetState extends State<SerialListWidget> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    context.read<SerialListViewModel>().setupLocale(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialListModel>(context);
-    if (model == null) return const SizedBox.shrink();
     return Stack(
-      children: [
-        ListView.builder(
-          padding: const EdgeInsets.only(top: 70),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          itemCount: model.serials.length,
-          itemExtent: 160,
-          itemBuilder: (BuildContext context, int index) {
-            model.showedSerialAtIndex(index);
-            final serial = model.serials[index];
-            final posterPath = serial.posterPath;
-            return Padding(
-              padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.black.withOpacity(0.2)),
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 8, //размытие тени
-                          offset: const Offset(
-                              0, 2), //смещение тени из под контейнера
-                        ),
-                      ],
-                    ),
-                    clipBehavior: Clip.hardEdge,
-                    child: Row(
-                      children: [
-                        posterPath != null
-                            ? Image.network(
-                                ImageDownloader.imageUrl(posterPath),
-                                width: 95)
-                            : const SizedBox.shrink(),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 16),
-                                Text(
-                                  serial.name,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  model.stringFromDate(serial.firstAirDate),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                      fontSize: 14.4, color: Colors.grey),
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  serial.overview,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: const BorderRadius.all(Radius.circular(10)),
-                      onTap: () => model.onSerialTap(context, index),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: TextField(
-            onChanged: model.searchSerial,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              labelText: 'Поиск',
-              filled: true,
-              fillColor: Colors.white.withAlpha(235),
-            ),
-          ),
-        ),
+      children: const [
+        _SerialList(),
+        _SearchWidget(),
       ],
     );
   }
 }
 
+class _SerialList extends StatelessWidget {
+  const _SerialList({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final model = context.watch<SerialListViewModel>();
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 70),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      itemCount: model.serials.length,
+      itemExtent: 160,
+      itemBuilder: (BuildContext context, int index) {
+        model.showedSerialAtIndex(index);
+        return _SerialListRowWidget(index: index);
+      },
+    );
+  }
+}
+
+class _SerialListRowWidget extends StatelessWidget {
+  final int index;
+  const _SerialListRowWidget({Key? key, required this.index}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final model = context.read<SerialListViewModel>();
+
+    final serial = model.serials[index];
+    final posterPath = serial.posterPath;
+    return Padding(
+      padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: Colors.black.withOpacity(0.2)),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8, //размытие тени
+                  offset: const Offset(0, 2), //смещение тени из под контейнера
+                ),
+              ],
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: Row(
+              children: [
+                if (posterPath != null)
+                  Image.network(ImageDownloader.imageUrl(posterPath),
+                      width: 95),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
+                        Text(
+                          serial.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          serial.firstAirDate,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 14.4, color: Colors.grey),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          serial.overview,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              onTap: () => model.onSerialTap(context, index),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchWidget extends StatelessWidget {
+  const _SearchWidget({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final model = context.read<SerialListViewModel>();
+
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: TextField(
+        onChanged: model.searchSerial,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          labelText: 'Поиск',
+          filled: true,
+          fillColor: Colors.white.withAlpha(235),
+        ),
+      ),
+    );
+  }
+}
 
 
 
