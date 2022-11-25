@@ -9,7 +9,8 @@ import 'package:flutter_themoviedb/domain/entity/serial_details.dart';
 class SerialApiClient {
   final _networkClient = NetworkClient();
 
-  Future<PopularSerialResponse> popularSerial(int page, String locale) async {
+  Future<PopularSerialResponse> popularSerial(
+      int page, String locale, String apiKey) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularSerialResponse.fromJson(jsonMap);
@@ -17,7 +18,7 @@ class SerialApiClient {
     }
 
     final result = _networkClient.get('/tv/popular', parser, <String, dynamic>{
-      'api_key': Config.apiKey,
+      'api_key': apiKey,
       'language': locale,
       'page': page.toString(),
     });
@@ -25,7 +26,7 @@ class SerialApiClient {
   }
 
   Future<PopularSerialResponse> searchSerial(
-      int page, String locale, String query) async {
+      int page, String locale, String query, String apiKey) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularSerialResponse.fromJson(jsonMap);
@@ -33,7 +34,7 @@ class SerialApiClient {
     }
 
     final result = _networkClient.get('/search/tv', parser, <String, dynamic>{
-      'api_key': Config.apiKey,
+      'api_key': apiKey,
       'language': locale,
       'page': page.toString(),
       'include_adult': true.toString(),
@@ -42,7 +43,8 @@ class SerialApiClient {
     return result;
   }
 
-  Future<SerialDetails> serialDetails(int tvId, String locale) async {
+  Future<SerialDetails> serialDetails(
+      int tvId, String locale, String apiKey) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = SerialDetails.fromJson(jsonMap);
@@ -51,7 +53,7 @@ class SerialApiClient {
 
     final result = _networkClient.get('/tv/$tvId', parser, <String, dynamic>{
       'append_to_response': 'credits,videos',
-      'api_key': Config.apiKey,
+      'api_key': apiKey,
       'language': locale,
     });
     return result;
@@ -61,6 +63,7 @@ class SerialApiClient {
     int tvId,
     String locale,
     String sessionId,
+    String apiKey,
   ) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
@@ -70,7 +73,7 @@ class SerialApiClient {
 
     final result = _networkClient
         .get('/tv/$tvId/account_states', parser, <String, dynamic>{
-      'api_key': Config.apiKey,
+      'api_key': apiKey,
       'language': locale,
       'session_id': sessionId,
     });
@@ -78,7 +81,8 @@ class SerialApiClient {
   }
 
   /// Это метод для фильмов, а всё, что выше для сериалов
-  Future<PopularMovieResponse> popularMovie(int page, String locale) async {
+  Future<PopularMovieResponse> popularMovie(
+      int page, String locale, String apiKey) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularMovieResponse.fromJson(jsonMap);
@@ -87,7 +91,7 @@ class SerialApiClient {
 
     final result =
         _networkClient.get('/movie/popular', parser, <String, dynamic>{
-      'api_key': Config.apiKey,
+      'api_key': apiKey,
       'language': locale,
       'page': page.toString(),
     });
