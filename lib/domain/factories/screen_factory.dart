@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart'
-    as old_provider;
 import 'package:flutter_themoviedb/ui/widgets/auth/auth_model.dart';
 import 'package:flutter_themoviedb/ui/widgets/auth/auth_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/loader_widget/loader_view_model.dart';
@@ -36,8 +34,8 @@ class ScreenFactory {
   }
 
   Widget makeSerialDetails(int serialId) {
-    return old_provider.NotifierProvider(
-      create: () => SerialDetailsModel(serialId),
+    return ChangeNotifierProvider(
+      create: (_) => SerialDetailsModel(serialId),
       child: const SerialDetailsWidget(),
     );
   }
