@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/domain/data_providers/session_data_provider.dart';
 import 'package:flutter_themoviedb/domain/factories/screen_factory.dart';
 
 class MainScreenWidget extends StatefulWidget {
@@ -27,7 +26,7 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
         title: const SafeArea(child: Text('TMDB')),
         actions: [
           IconButton(
-            onPressed: () => SessionDataProvider().setSessionId(null),
+            onPressed: () {},
             icon: const Icon(Icons.search),
           )
         ],
