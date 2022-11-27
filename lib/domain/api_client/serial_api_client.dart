@@ -43,8 +43,7 @@ class SerialApiClient {
     return result;
   }
 
-  Future<SerialDetails> serialDetails(
-      int tvId, String locale, String apiKey) async {
+  Future<SerialDetails> serialDetails(int tvId, String locale) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = SerialDetails.fromJson(jsonMap);
@@ -53,7 +52,7 @@ class SerialApiClient {
 
     final result = _networkClient.get('/tv/$tvId', parser, <String, dynamic>{
       'append_to_response': 'credits,videos',
-      'api_key': apiKey,
+      'api_key': Config.apiKey,
       'language': locale,
     });
     return result;
@@ -61,9 +60,7 @@ class SerialApiClient {
 
   Future<bool> isFavourite(
     int tvId,
-    String locale,
     String sessionId,
-    String apiKey,
   ) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
@@ -73,16 +70,14 @@ class SerialApiClient {
 
     final result = _networkClient
         .get('/tv/$tvId/account_states', parser, <String, dynamic>{
-      'api_key': apiKey,
-      'language': locale,
+      'api_key': Config.apiKey,
       'session_id': sessionId,
     });
     return result;
   }
 
   /// Это метод для фильмов, а всё, что выше для сериалов
-  Future<PopularMovieResponse> popularMovie(
-      int page, String locale, String apiKey) async {
+  Future<PopularMovieResponse> popularMovie(int page, String locale) async {
     parser(dynamic json) {
       final jsonMap = json as Map<String, dynamic>;
       final response = PopularMovieResponse.fromJson(jsonMap);
@@ -91,7 +86,7 @@ class SerialApiClient {
 
     final result =
         _networkClient.get('/movie/popular', parser, <String, dynamic>{
-      'api_key': apiKey,
+      'api_key': Config.apiKey,
       'language': locale,
       'page': page.toString(),
     });
