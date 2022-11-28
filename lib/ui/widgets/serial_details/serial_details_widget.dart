@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
-import 'package:flutter_themoviedb/ui/widgets/app/my_app_model.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_main_info_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_main_screen_cast_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_model.dart';
+import 'package:provider/provider.dart';
 
 class SerialDetailsWidget extends StatefulWidget {
   const SerialDetailsWidget({Key? key}) : super(key: key);
@@ -14,17 +13,11 @@ class SerialDetailsWidget extends StatefulWidget {
 
 class _SerialDetailsWidgetState extends State<SerialDetailsWidget> {
   @override
-  void initState() {
-    super.initState();
-    final model = NotifierProvider.read<SerialDetailsModel>(context);
-    final appModel = Provider.read<MyAppModel>(context);
-    model?.onSessionExpired = () => appModel?.resetSession(context);
-  }
-
-  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    NotifierProvider.read<SerialDetailsModel>(context)?.setupLocale(context);
+
+    Future.microtask(
+        () => context.read<SerialDetailsModel>().setupLocale(context));
   }
 
   @override
@@ -46,8 +39,9 @@ class _TitleWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    return Text(model?.serialDetails?.name ?? 'load..');
+    final title =
+        context.select((SerialDetailsModel model) => model.data.title);
+    return Text(title);
   }
 }
 
@@ -56,9 +50,9 @@ class _BodyWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    final serialDetails = model?.serialDetails;
-    if (serialDetails == null) {
+    final isLoading =
+        context.select((SerialDetailsModel model) => model.data.isLoading);
+    if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
     return ListView(

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
-import 'package:flutter_themoviedb/domain/entity/serial_details.dart';
-import 'package:flutter_themoviedb/library/default_widgets/inherited/notifier_provider.dart';
 import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
 import 'package:flutter_themoviedb/ui/theme/app_colors.dart';
 import 'package:flutter_themoviedb/ui/widgets/elements/radial_percent_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_model.dart';
+import 'package:provider/provider.dart';
 
 class SerialDetailsMainInfoWidget extends StatelessWidget {
   const SerialDetailsMainInfoWidget({Key? key}) : super(key: key);
@@ -30,17 +29,18 @@ class _TopPosterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    final backdropPath = model?.serialDetails?.backdropPath;
-    final posterPath = model?.serialDetails?.posterPath;
+    final posterData =
+        context.select((SerialDetailsModel model) => model.data.posterData);
+    final model = context.read<SerialDetailsModel>();
+    final backdropPath = posterData.backdropPath;
+    final posterPath = posterData.posterPath;
 
     return AspectRatio(
       aspectRatio: 390 / 219,
       child: Stack(
         children: [
-          backdropPath != null
-              ? Image.network(ImageDownloader.imageUrl(backdropPath))
-              : const SizedBox.shrink(),
+          if (backdropPath != null)
+            Image.network(ImageDownloader.imageUrl(backdropPath)),
           Container(
             height: 225,
             decoration: const BoxDecoration(
@@ -56,17 +56,16 @@ class _TopPosterWidget extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            top: 20,
-            left: 20,
-            bottom: 20,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.0),
-              child: posterPath != null
-                  ? Image.network(ImageDownloader.imageUrl(posterPath))
-                  : const SizedBox.shrink(),
+          if (posterPath != null)
+            Positioned(
+              top: 20,
+              left: 20,
+              bottom: 20,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12.0),
+                child: Image.network(ImageDownloader.imageUrl(posterPath)),
+              ),
             ),
-          ),
           Positioned(
             top: 5,
             right: 5,
@@ -79,15 +78,13 @@ class _TopPosterWidget extends StatelessWidget {
                         color: Color.fromARGB(178, 3, 50, 88))),
                 IconButton(
                   icon: Icon(
-                    model?.isFavorite == true
-                        ? Icons.favorite
-                        : Icons.favorite_outline,
+                    posterData.favoriteIcon,
                     color: Colors.white,
                     shadows: const [
                       BoxShadow(color: AppColors.mainDarkBlue, blurRadius: 25)
                     ],
                   ),
-                  onPressed: () => model?.toggleFavorite(),
+                  onPressed: () => model.toggleFavorite(context),
                 ),
               ],
             ),
@@ -103,20 +100,20 @@ class _SerialNameWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    final year = model?.serialDetails?.firstAirDate?.year.toString() ?? '';
+    final nameData =
+        context.select((SerialDetailsModel model) => model.data.nameData);
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: RichText(
         text: TextSpan(children: [
           TextSpan(
-              text: model?.serialDetails?.name ?? '',
+              text: nameData.name,
               style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 23,
               )),
           TextSpan(
-              text: '  ($year)',
+              text: nameData.year,
               style: TextStyle(
                 fontWeight: FontWeight.w400,
                 fontSize: 18,
@@ -134,12 +131,9 @@ class _RatingAndTrailer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    final voteAverage = model?.serialDetails?.voteAverage ?? 0;
+    final ratingData =
+        context.select((SerialDetailsModel model) => model.data.ratingData);
 
-    final videos = model?.serialDetails?.videos.results
-        .where((video) => video.type == 'Trailer' && video.site == 'YouTube');
-    final trailerKey = videos?.isNotEmpty == true ? videos?.first.key : null;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
@@ -151,12 +145,12 @@ class _RatingAndTrailer extends StatelessWidget {
                   width: 60,
                   height: 60,
                   child: RadialPercentWidget(
-                      percent: voteAverage / 10,
+                      percent: ratingData.voteAverage / 10,
                       fillColor: const Color.fromRGBO(24, 23, 27, 1.0),
                       lineColor: const Color.fromARGB(255, 46, 214, 133),
                       freeColor: const Color.fromARGB(255, 38, 77, 58),
                       lineWidth: 3,
-                      child: Text((voteAverage * 10).toStringAsFixed(0),
+                      child: Text((ratingData.voteAverage).toStringAsFixed(0),
                           style: const TextStyle(
                               color: Colors.white, fontSize: 21))),
                 ),
@@ -164,19 +158,18 @@ class _RatingAndTrailer extends StatelessWidget {
               ],
             )),
         Container(width: 1, height: 20, color: Colors.grey),
-        trailerKey != null
-            ? TextButton(
-                onPressed: () => Navigator.of(context).pushNamed(
-                    MainNavigationRouteNames.trailer,
-                    arguments: trailerKey),
-                child: Row(
-                  children: const [
-                    Icon(Icons.play_arrow, color: Colors.white),
-                    Text('  Trailer', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              )
-            : const SizedBox.shrink(),
+        if (ratingData.trailerKey != null)
+          TextButton(
+            onPressed: () => Navigator.of(context).pushNamed(
+                MainNavigationRouteNames.trailer,
+                arguments: ratingData.trailerKey),
+            child: Row(
+              children: const [
+                Icon(Icons.play_arrow, color: Colors.white),
+                Text('  Trailer', style: TextStyle(color: Colors.white)),
+              ],
+            ),
+          )
       ],
     );
   }
@@ -190,37 +183,9 @@ class _EpisodeRunTimeAndGenresWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
+    final dataGenres =
+        context.select((SerialDetailsModel model) => model.data.dataGenres);
 
-    String runTime;
-    final episodeRunTime = model?.serialDetails?.episodeRunTime;
-    if (episodeRunTime != null && episodeRunTime.isNotEmpty) {
-      int sum = episodeRunTime.fold<int>(
-          0, (previousValue, element) => previousValue + element);
-      final averageValue = sum ~/ episodeRunTime.length;
-      final duration = Duration(minutes: averageValue);
-      final hours = duration.inHours;
-      final minutes = duration.inMinutes.remainder(60);
-      if (hours == 0) {
-        runTime = '~ $minutes m';
-      } else if (minutes == 0) {
-        runTime = '~ $hours h';
-      } else {
-        runTime = '~ $hours h $minutes m';
-      }
-    } else {
-      runTime = '';
-    }
-
-    var texts = <String>[];
-    final genres = model?.serialDetails?.genres;
-    if (genres != null && genres.isNotEmpty) {
-      var genresNames = <String>[];
-      for (var genr in genres) {
-        genresNames.add(genr.name);
-      }
-      texts.add(genresNames.join(', '));
-    }
     return ColoredBox(
       color: const Color.fromRGBO(22, 21, 25, 1.0),
       child: SizedBox(
@@ -230,11 +195,11 @@ class _EpisodeRunTimeAndGenresWidget extends StatelessWidget {
           child: Column(
             children: [
               SizedBox(
-                child: Text(runTime, style: textStyle),
+                child: Text(dataGenres.runTime, style: textStyle),
               ),
               const SizedBox(height: 3.5),
               Text(
-                texts.join(' '),
+                dataGenres.genres.join(),
                 style: textStyle,
                 textAlign: TextAlign.center,
                 maxLines: 3,
@@ -252,23 +217,16 @@ class _OverviewWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    final overview = model?.serialDetails?.overview ?? '';
-    final tagline = model?.serialDetails?.tagline ?? '';
+    final dataOverview =
+        context.select((SerialDetailsModel model) => model.data.dataOverview);
 
-    String overviewTitle;
-    if (overview.isNotEmpty) {
-      overviewTitle = 'Overview';
-    } else {
-      overviewTitle = 'no description here';
-    }
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            tagline,
+            dataOverview.tagline ?? '',
             style: TextStyle(
               fontSize: 18,
               color: Colors.white.withOpacity(0.7),
@@ -278,7 +236,7 @@ class _OverviewWidget extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            overviewTitle,
+            dataOverview.overviewTitle,
             style: const TextStyle(
               fontSize: 21,
               color: Colors.white,
@@ -287,7 +245,7 @@ class _OverviewWidget extends StatelessWidget {
           ),
           const SizedBox(height: 15),
           Text(
-            overview,
+            dataOverview.overview ?? '',
             style: const TextStyle(
               fontSize: 17.1,
               color: Colors.white,
@@ -304,34 +262,24 @@ class _CreatorsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = NotifierProvider.watch<SerialDetailsModel>(context);
-    var createdBy = model?.serialDetails?.createdBy;
+    var creatorsData =
+        context.select((SerialDetailsModel model) => model.data.dataCreators);
 
-    if (createdBy == null || createdBy.isEmpty) return const SizedBox.shrink();
-
-    createdBy = createdBy.length > 4 ? createdBy.sublist(0, 4) : createdBy;
-    var createdByChunks = <List<CreatedBy>>[];
-    for (var i = 0; i < createdBy.length; i += 2) {
-      createdByChunks.add(createdBy.sublist(
-          i, i + 2 > createdBy.length ? createdBy.length : i + 2));
-    }
+    if (creatorsData.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20, top: 15),
       child: Column(
-        children: createdByChunks
+        children: creatorsData
             .map((chunk) => _CreatorsWidgetRow(creatorsRow: chunk))
             .toList(),
-        // _CreatorsWidgetColumn(),
-        // const SizedBox(width: 60),
-        // _CreatorsWidgetColumn(),
       ),
     );
   }
 }
 
 class _CreatorsWidgetRow extends StatelessWidget {
-  final List<CreatedBy> creatorsRow;
+  final List<SerialDetailsCreatorsData> creatorsRow;
   const _CreatorsWidgetRow({Key? key, required this.creatorsRow})
       : super(key: key);
 
@@ -342,15 +290,12 @@ class _CreatorsWidgetRow extends StatelessWidget {
       children: creatorsRow
           .map((creator) => _CreatorWidgetItem(creator: creator))
           .toList(),
-      // _PeopleWidgetItem(creator: ),
-      // const SizedBox(height: 20),
-      // _PeopleWidgetItem(creator: ),
     );
   }
 }
 
 class _CreatorWidgetItem extends StatelessWidget {
-  final CreatedBy creator;
+  final SerialDetailsCreatorsData creator;
   const _CreatorWidgetItem({Key? key, required this.creator}) : super(key: key);
 
   @override
