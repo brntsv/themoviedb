@@ -1,11 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
+import 'package:flutter_themoviedb/domain/services/serial_service.dart';
 import 'package:intl/intl.dart';
-
-import 'package:flutter_themoviedb/domain/api_client/account_api_client.dart';
 import 'package:flutter_themoviedb/domain/api_client/api_client_exception.dart';
-import 'package:flutter_themoviedb/domain/api_client/serial_api_client.dart';
-import 'package:flutter_themoviedb/domain/data_providers/session_data_provider.dart';
 import 'package:flutter_themoviedb/domain/entity/serial_details.dart';
 import 'package:flutter_themoviedb/domain/services/auth_service.dart';
 import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
@@ -127,9 +123,7 @@ class SerialDetailsData {
 
 class SerialDetailsModel extends ChangeNotifier {
   final _authService = AuthService();
-  final _sessionDataProvider = SessionDataProvider();
-  final _serialApiClient = SerialApiClient();
-  final _accountApiClient = AccountApiClient();
+  final _serialService = SerialService();
 
   final int serialId;
   final data = SerialDetailsData();
@@ -145,21 +139,6 @@ class SerialDetailsModel extends ChangeNotifier {
     _dateFormat = DateFormat.yMMMMd(locale);
     updateData(null, false);
     await loadDetails(context);
-  }
-
-  Future<void> loadDetails(BuildContext context) async {
-    try {
-      final serialDetails =
-          await _serialApiClient.serialDetails(serialId, _locale);
-      final sessionId = await _sessionDataProvider.getSessionId();
-      bool isFavorite = false;
-      if (sessionId != null) {
-        isFavorite = await _serialApiClient.isFavourite(serialId, sessionId);
-      }
-      updateData(serialDetails, isFavorite);
-    } on ApiClientException catch (e) {
-      _handleApiClientException(e, context);
-    }
   }
 
   /// Большой метод по обновлению данных, далее есть пояснения
@@ -268,21 +247,25 @@ class SerialDetailsModel extends ChangeNotifier {
     return createdByChunks;
   }
 
+  Future<void> loadDetails(BuildContext context) async {
+    try {
+      final details = await _serialService.loadDetails(
+        serialId: serialId,
+        locale: _locale,
+      );
+      updateData(details.details, details.isFavorite);
+    } on ApiClientException catch (e) {
+      _handleApiClientException(e, context);
+    }
+  }
+
   Future<void> toggleFavorite(BuildContext context) async {
-    final sessionId = await _sessionDataProvider.getSessionId();
-    final accountId = await _sessionDataProvider.getAccountId();
-
-    if (sessionId == null || accountId == null) return;
-
     data.posterData =
         data.posterData.copyWith(isFavorite: !data.posterData.isFavorite);
     notifyListeners();
     try {
-      await _accountApiClient.markAsFavorite(
-        accountId: accountId,
-        sessionId: sessionId,
-        mediaType: MediaType.tv,
-        mediaId: serialId,
+      await _serialService.updateFavorite(
+        serialId: serialId,
         isFavorite: data.posterData.isFavorite,
       );
     } on ApiClientException catch (e) {
@@ -291,12 +274,13 @@ class SerialDetailsModel extends ChangeNotifier {
   }
 
   void _handleApiClientException(
-      ApiClientException exception, BuildContext context) {
+    ApiClientException exception,
+    BuildContext context,
+  ) {
     switch (exception.type) {
       case ApiClientExceptionType.sessionExpired:
         _authService.logout();
         MainNavigation.resetNavigation(context);
-
         break;
       default:
         print(exception);
