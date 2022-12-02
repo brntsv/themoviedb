@@ -128,7 +128,7 @@ class SerialDetailsModel extends ChangeNotifier {
   final int serialId;
   final data = SerialDetailsData();
   String _locale = '';
-  late DateFormat _dateFormat;
+  late DateFormat dateFormat;
 
   SerialDetailsModel(this.serialId);
 
@@ -136,7 +136,7 @@ class SerialDetailsModel extends ChangeNotifier {
     final locale = Localizations.localeOf(context).toLanguageTag();
     if (_locale == locale) return;
     _locale = locale;
-    _dateFormat = DateFormat.yMMMMd(locale);
+    dateFormat = DateFormat.yMMMMd(locale);
     updateData(null, false);
     await loadDetails(context);
   }

@@ -1,13 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_themoviedb/config/config.dart';
 import 'package:flutter_themoviedb/domain/entity/serials.dart';
 import 'package:flutter_themoviedb/domain/services/serial_service.dart';
 import 'package:flutter_themoviedb/library/paginator.dart';
 import 'package:intl/intl.dart';
-
-import 'package:flutter_themoviedb/domain/entity/popular_serial_response.dart';
 import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
 
 class SerialListRowData {

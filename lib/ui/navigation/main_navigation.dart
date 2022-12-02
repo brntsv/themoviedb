@@ -14,7 +14,7 @@ class MainNavigation {
 
   final routes = <String, Widget Function(BuildContext)>{
     MainNavigationRouteNames.loaderWidget: (_) => _screenFactory.makeLoader(),
-    MainNavigationRouteNames.auth: (_) => _screenFactory.makeAuthWidget(),
+    MainNavigationRouteNames.auth: (_) => _screenFactory.makeAuth(),
     MainNavigationRouteNames.mainScreen: (_) => _screenFactory.makeMainScreen(),
   };
   Route<Object> onGenerateRoute(RouteSettings settings) {

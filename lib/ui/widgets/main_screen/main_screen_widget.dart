@@ -23,7 +23,7 @@ class _MainScreenWidgetState extends State<MainScreenWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const SafeArea(child: Text('TMDB')),
+        title: const Text('TMDB', style: TextStyle(fontSize: 27)),
         actions: [
           IconButton(
             onPressed: () {},
