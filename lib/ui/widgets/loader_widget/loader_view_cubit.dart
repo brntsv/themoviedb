@@ -12,12 +12,16 @@ class LoaderViewCubit extends Cubit<LoaderViewCubitState> {
     LoaderViewCubitState initialState,
     this.authBloc,
   ) : super(initialState) {
-    authBloc.add(AuthCheckStatusEvent());
-    onState(authBloc.state);
-    authBlocSubscribtion = authBloc.stream.listen(onState);
+    Future.microtask(
+      () {
+        _onState(authBloc.state);
+        authBlocSubscribtion = authBloc.stream.listen(_onState);
+        authBloc.add(AuthCheckStatusEvent());
+      },
+    );
   }
 
-  void onState(AuthState state) {
+  void _onState(AuthState state) {
     if (state is AuthAutorizedState) {
       emit(LoaderViewCubitState.autorized);
     } else if (state is AuthNotAutorizedState) {
@@ -31,24 +35,3 @@ class LoaderViewCubit extends Cubit<LoaderViewCubitState> {
     return super.close();
   }
 }
-
-// class LoaderViewModel {
-//   final BuildContext context;
-//   final _authService = AuthService();
-
-//   LoaderViewModel(this.context) {
-//     asyncInit();
-//   }
-
-//   Future<void> asyncInit() async {
-//     checkAuth();
-//   }
-
-//   Future<void> checkAuth() async {
-//     final isAuth = await _authService.isAuth();
-//     final nextScreen = isAuth
-//         ? MainNavigationRouteNames.mainScreen
-//         : MainNavigationRouteNames.auth;
-//     Navigator.of(context).pushReplacementNamed(nextScreen);
-//   }
-// }

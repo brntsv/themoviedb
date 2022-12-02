@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_themoviedb/domain/blocs/auth_bloc.dart';
-import 'package:flutter_themoviedb/ui/widgets/auth/auth_model.dart';
+import 'package:flutter_themoviedb/ui/widgets/auth/auth_view_cubit.dart';
 import 'package:flutter_themoviedb/ui/widgets/auth/auth_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/loader_widget/loader_view_cubit.dart';
 import 'package:flutter_themoviedb/ui/widgets/loader_widget/loader_widget.dart';
@@ -22,16 +22,20 @@ class ScreenFactory {
     final authBloc = _authBloc ?? AuthBloc(AuthCheckStatusProgressState());
     _authBloc = authBloc;
     return BlocProvider<LoaderViewCubit>(
-      create: (context) =>
-          LoaderViewCubit(LoaderViewCubitState.unknown, authBloc),
-      lazy: false,
+      create: (_) => LoaderViewCubit(LoaderViewCubitState.unknown, authBloc),
+      // lazy: false,
       child: const LoaderWidget(),
     );
   }
 
-  Widget makeAuthWidget() {
-    return ChangeNotifierProvider(
-      create: (_) => AuthViewModel(),
+  Widget makeAuth() {
+    final authBloc = _authBloc ?? AuthBloc(AuthCheckStatusProgressState());
+    _authBloc = authBloc;
+    return BlocProvider<AuthViewCubit>(
+      create: (_) => AuthViewCubit(
+        AuthViewCubitFormFillInProgressState(),
+        authBloc,
+      ),
       child: const AuthWidget(),
     );
   }
