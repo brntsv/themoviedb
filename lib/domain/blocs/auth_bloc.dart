@@ -20,8 +20,6 @@ class AuthLoginEvent extends AuthEvent {
   });
 }
 
-// enum AuthStateStatus { autorized, notAutorized, inProgress }
-
 abstract class AuthState {}
 
 /// Состояние, когда авторизован
@@ -109,6 +107,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthCheckStatusEvent event,
     Emitter<AuthState> emit,
   ) async {
+    emit(AuthInProgressState());
     final sessionId = await _sessionDataProvider.getSessionId();
     final newState =
         sessionId != null ? AuthAutorizedState() : AuthNotAutorizedState();
@@ -120,6 +119,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     try {
+      emit(AuthInProgressState());
       final sessionId = await _authApiClient.auth(
         username: event.login,
         password: event.password,
@@ -137,8 +137,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLogoutEvent event,
     Emitter<AuthState> emit,
   ) async {
-    await _sessionDataProvider.deleteSessionId();
-    await _sessionDataProvider.deleteAccountId();
-    emit(AuthNotAutorizedState());
+    try {
+      await _sessionDataProvider.deleteSessionId();
+      await _sessionDataProvider.deleteAccountId();
+    } catch (e) {
+      emit(AuthFailureState(e));
+    }
   }
 }
