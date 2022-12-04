@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_themoviedb/domain/blocs/auth_bloc.dart';
+import 'package:flutter_themoviedb/domain/blocs/serial_list_bloc.dart';
 import 'package:flutter_themoviedb/ui/widgets/auth/auth_view_cubit.dart';
 import 'package:flutter_themoviedb/ui/widgets/auth/auth_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/loader_widget/loader_view_cubit.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_themoviedb/ui/widgets/movie_list/movie_list_widget.dart'
 import 'package:flutter_themoviedb/ui/widgets/news_list/news_list_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_model.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_details/serial_details_widget.dart';
-import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_model.dart';
+import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_cubit.dart';
 import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_widget.dart';
 import 'package:flutter_themoviedb/ui/widgets/trailers/trailer_widget.dart';
 import 'package:provider/provider.dart';
@@ -62,8 +63,12 @@ class ScreenFactory {
   }
 
   Widget makeSerialList() {
-    return ChangeNotifierProvider(
-      create: (_) => SerialListViewModel(),
+    return BlocProvider(
+      create: (_) => SerialListCubit(
+        serialListBloc: SerialListBloc(
+          const SerialListState.initial(),
+        ),
+      ),
       child: const SerialListWidget(),
     );
   }

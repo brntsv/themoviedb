@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_themoviedb/ui/navigation/main_navigation.dart';
+import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_cubit.dart';
 import 'package:provider/provider.dart';
 
 import 'package:flutter_themoviedb/domain/api_client/image_downloader.dart';
-import 'package:flutter_themoviedb/ui/widgets/serial_list/serial_list_model.dart';
 
 class SerialListWidget extends StatefulWidget {
   const SerialListWidget({Key? key}) : super(key: key);
@@ -16,7 +17,8 @@ class _SerialListWidgetState extends State<SerialListWidget> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    context.read<SerialListViewModel>().setupLocale(context);
+    final locale = Localizations.localeOf(context);
+    context.read<SerialListCubit>().setupLocale(locale.languageCode);
   }
 
   @override
@@ -35,15 +37,15 @@ class _SerialList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.watch<SerialListViewModel>();
+    final cubit = context.watch<SerialListCubit>();
 
     return ListView.builder(
       padding: const EdgeInsets.only(top: 70),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      itemCount: model.serials.length,
+      itemCount: cubit.state.serials.length,
       itemExtent: 160,
       itemBuilder: (BuildContext context, int index) {
-        model.showedSerialAtIndex(index);
+        cubit.showedSerialAtIndex(index);
         return _SerialListRowWidget(index: index);
       },
     );
@@ -56,9 +58,9 @@ class _SerialListRowWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.read<SerialListViewModel>();
+    final cubit = context.read<SerialListCubit>();
 
-    final serial = model.serials[index];
+    final serial = cubit.state.serials[index];
     final posterPath = serial.posterPath;
     return Padding(
       padding: const EdgeInsets.only(right: 16, left: 16, top: 16),
@@ -123,11 +125,18 @@ class _SerialListRowWidget extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: const BorderRadius.all(Radius.circular(10)),
-              onTap: () => model.onSerialTap(context, index),
+              onTap: () => _onSerialTap(context, serial.id),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _onSerialTap(BuildContext context, int serialId) {
+    Navigator.of(context).pushNamed(
+      MainNavigationRouteNames.serialDetails,
+      arguments: serialId,
     );
   }
 }
@@ -137,12 +146,12 @@ class _SearchWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final model = context.read<SerialListViewModel>();
+    final cubit = context.read<SerialListCubit>();
 
     return Padding(
       padding: const EdgeInsets.all(12.0),
       child: TextField(
-        onChanged: model.searchSerial,
+        onChanged: cubit.searchSerial,
         decoration: InputDecoration(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
